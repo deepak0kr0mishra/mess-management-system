@@ -1,0 +1,110 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ───────────────────────────────────
+    function isAuth()       { return request.auth != null; }
+    function uid()          { return request.auth.uid; }
+    function role()         { return get(/databases/$(database)/documents/users/$(uid())).data.role; }
+    function isStudent()    { return isAuth() && role() == 'student'; }
+    function isCommittee()  { return isAuth() && (role() == 'committee' || role() == 'super_admin'); }
+    function isWorker()     { return isAuth() && role() == 'worker'; }
+    function isAdmin()      { return isAuth() && role() == 'super_admin'; }
+
+    // ── /users/{uid} ───────────────────────────────────────
+    match /users/{userId} {
+      // Anyone can read their own profile
+      allow read: if isAuth() && uid() == userId;
+      // Committee & admin can read all users (for ledger, dashboard)
+      allow read: if isCommittee();
+      // Students can create their own profile on first login
+      allow create: if isAuth() && uid() == userId;
+      // Students can update only non-role fields
+      allow update: if isAuth() && uid() == userId
+        && !('role' in request.resource.data.diff(resource.data).affectedKeys());
+      // Committee can update isApproved field (student approval)
+      allow update: if isCommittee();
+      // Only super admin can update role
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── /optouts/{requestId} ──────────────────────────────
+    match /optouts/{requestId} {
+      // Students can create their own opt-out
+      allow create: if isAuth()
+        && request.resource.data.uid == uid()
+        && request.resource.data.status == 'pending';
+      // Students can read their own opt-outs
+      allow read: if isAuth() && resource.data.uid == uid();
+      // Committee can read all, update status
+      allow read, update: if isCommittee();
+      allow delete: if isAdmin();
+    }
+
+    // ── /system/dailyToken ────────────────────────────────
+    match /system/{docId} {
+      // Everyone can read (to display the token)
+      allow read: if isAuth();
+      // Only committee/admin can write
+      allow write: if isCommittee();
+    }
+
+    // ── /blocklist/{date} ─────────────────────────────────
+    match /blocklist/{date} {
+      // Workers and committee can read (for gate check)
+      allow read: if isAuth() && (isWorker() || isCommittee());
+      // Committee can write (rebuild after approvals)
+      allow write: if isCommittee();
+    }
+
+    // ── /menu/{date} ──────────────────────────────────────
+    match /menu/{date} {
+      // All authenticated users can read the menu
+      allow read: if isAuth();
+      // Committee can write (set today's menu)
+      allow write: if isCommittee();
+    }
+
+    // ── /announcements/{id} ───────────────────────────────
+    match /announcements/{announcementId} {
+      // All authenticated users can read
+      allow read: if isAuth();
+      // Committee can create & delete
+      allow create: if isCommittee();
+      allow delete: if isCommittee();
+      allow update: if isCommittee();
+    }
+
+    // ── /feedback/{msgId} ────────────────────────────────
+    match /feedback/{msgId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.uid == uid();
+      allow update: if isAuth();
+      allow delete: if isCommittee();
+    }
+
+    // ── /penalties/{id} ────────────────────────────────
+    match /penalties/{id} {
+      // Committee and admin can read all penalties
+      allow read: if isCommittee();
+      // Committee can create penalties
+      allow create: if isCommittee();
+      // Committee can update (resolve) penalty records
+      allow update: if isCommittee();
+      // Only admin can delete penalty records
+      allow delete: if isAdmin() || isCommittee();
+    }
+
+    // ── /scans/{date}/{mealKey}/{uid} ──────────────────────
+    // Nested subcollection: scans/2026-09-08/lunch/abc123uid
+    match /scans/{date}/{mealKey}/{uid} {
+      // Workers create scan records when students enter
+      allow create, update: if isWorker() || isCommittee();
+      // Workers, committee, and admin can read scan records
+      allow read: if isAuth() && (isWorker() || isCommittee());
+    }
+  }
+}

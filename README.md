@@ -1,0 +1,26 @@
+# mess-management-system
+
+A complete Mess Management System built with React, Vite, and Firebase.
+
+## Local Setup Instructions
+
+Follow these steps to run the project locally after cloning or forking:
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Environment Variables:**
+   The project requires Firebase configuration to run properly. 
+   - Create a new file named `.env.local` in the root directory.
+   - Copy the contents from `.env.example` into your new `.env.local` file.
+   - Replace the placeholder values with your actual Firebase project credentials.
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+## Note on Firebase Setup
+Without the `.env.local` file containing your valid Firebase keys, the application will crash during initialization.

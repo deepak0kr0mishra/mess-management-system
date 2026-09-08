@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Work+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Reset ────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-brand-bg text-brand-dark font-sans leading-relaxed antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-bold text-brand-dark leading-tight;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { @apply bg-brand-bg; }
+  ::-webkit-scrollbar-thumb  { @apply bg-brand-dark rounded-pill; }
+
+  /* Remove number input arrows */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* Selection colour */
+  ::selection { @apply bg-brand-primary text-brand-dark; }
+}
+
+/* ─── Component Layer ───────────────────────────────── */
+@layer components {
+  /* Highlighted text with coloured underlay */
+  .highlight {
+    @apply relative z-10 inline-block;
+  }
+  .highlight::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-2/5 bg-brand-primary -z-10 opacity-80 rounded-sm;
+  }
+  .highlight-pink::after   { @apply bg-brand-secondary; }
+  .highlight-mint::after   { @apply bg-brand-accent; }
+  .highlight-purple::after { @apply bg-brand-purple; }
+
+  /* Brutal press button — active state handled via Tailwind */
+  .btn-press {
+    @apply active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all duration-75;
+  }
+  .btn-press-sm {
+    @apply active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-75;
+  }
+
+  /* Token watermark text */
+  .watermark-text {
+    @apply select-none pointer-events-none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* ─── Utility Layer ─────────────────────────────────── */
+@layer utilities {
+  /* Scrollable area with hidden scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Safe area padding for mobile notches */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }
+  .safe-top    { padding-top:    env(safe-area-inset-top,    16px); }
+
+  /* Marquee container — clips overflow */
+  .marquee-container {
+    @apply overflow-hidden whitespace-nowrap;
+  }
+  .marquee-track {
+    @apply inline-flex;
+  }
+
+  /* Print-only / screen-only utilities */
+  .print-only  { display: none; }
+  @media print {
+    .no-print   { display: none !important; }
+    .print-only { display: block !important; }
+    body        { background: white !important; }
+  }
+}
+
+/* ─── Token Emoji Animations ─────────────────────────── */
+/* All 5 variants as pure CSS — works inside any container,
+   no Framer Motion dependency needed.                     */
+
+/* 1 & 2 — Marquee */
+@keyframes token-rtl {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes token-ltr {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+.token-marquee-rtl {
+  display: inline-flex;
+  animation: token-rtl 8s linear infinite;
+  will-change: transform;
+}
+.token-marquee-ltr {
+  display: inline-flex;
+  animation: token-ltr 8s linear infinite;
+  will-change: transform;
+}
+
+/* 3 — Pulse */
+@keyframes token-pulse {
+  0%, 100% { transform: scale(1);    }
+  50%       { transform: scale(1.38); }
+}
+.token-pulse {
+  display: inline-block;
+  animation: token-pulse 1.5s ease-in-out infinite;
+}
+
+/* 4 — Bounce */
+@keyframes token-bounce {
+  0%, 100% { transform: translateY(0);    }
+  45%       { transform: translateY(-26px); }
+}
+.token-bounce {
+  display: inline-block;
+  animation: token-bounce 0.75s ease-in-out infinite;
+}
+
+/* 5 — Wave */
+@keyframes token-wave {
+  0%, 100% { transform: translateY(0)     rotate(0deg);   }
+  25%       { transform: translateY(-18px) rotate(13deg);  }
+  75%       { transform: translateY(-18px) rotate(-13deg); }
+}
+.token-wave {
+  display: inline-block;
+  animation: token-wave 1.3s ease-in-out infinite;
+}
+
+/* Stagger helpers — apply to each emoji in the row */
+.token-delay-0  { animation-delay: 0s;     }
+.token-delay-1  { animation-delay: 0.13s;  }
+.token-delay-2  { animation-delay: 0.26s;  }
+.token-delay-3  { animation-delay: 0.39s;  }
+.token-delay-4  { animation-delay: 0.52s;  }
+.token-delay-5  { animation-delay: 0.65s;  }
+.token-delay-6  { animation-delay: 0.78s;  }
+
+
