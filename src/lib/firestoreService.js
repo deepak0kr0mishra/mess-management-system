@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 // ─────────────────────────────────────────────────────────
-=======
-gh auth login// ─────────────────────────────────────────────────────────
->>>>>>> f8cf1c4 (test case)
 //  src/lib/firestoreService.js
 //  All Firestore read/write helpers — imported by components
 // ─────────────────────────────────────────────────────────
@@ -68,13 +64,10 @@ export const updateWallet = (uid, newBalance) =>
 
 /** Submit a new opt-out request */
 export const submitOptOut = async (uid, data) => {
-<<<<<<< HEAD
   // Same-day opt-out block — UI bypass ho tab bhi guard rahe
   if (!data?.startDate || data.startDate <= TODAY()) {
     throw new Error('SAME_DAY_NOT_ALLOWED');
   }
-=======
->>>>>>> f8cf1c4 (test case)
   const ref = await addDoc(collection(db, 'optouts'), {
     uid,
     ...data,               // startDate, numDays, reason, docBase64, docFileName
@@ -220,27 +213,19 @@ export const getTodayOptOutUIDs = async () => {
 
 /**
  * Apply a penalty to a student:
-<<<<<<< HEAD
- * - Deducts amount from wallet (min 0)
-=======
  * - Deducts amount from wallet (negative balances are allowed)
->>>>>>> f8cf1c4 (test case)
  * - Writes a record to /penalties collection
  */
 export const applyPenalty = async (uid, { amount, reason, appliedBy }) => {
   const userSnap = await getDoc(doc(db, 'users', uid));
   if (!userSnap.exists()) throw new Error('Student not found');
   const student = userSnap.data();
-<<<<<<< HEAD
-  const newBalance = Math.max(0, (student.walletBalance || 0) - amount);
-=======
   const balanceBefore = Number(student.walletBalance) || 0;
   const penaltyAmount = Number(amount);
   if (!Number.isFinite(penaltyAmount) || penaltyAmount <= 0) {
     throw new Error('Penalty amount must be greater than zero');
   }
   const newBalance = balanceBefore - penaltyAmount;
->>>>>>> f8cf1c4 (test case)
 
   await Promise.all([
     // Deduct from wallet
@@ -253,19 +238,11 @@ export const applyPenalty = async (uid, { amount, reason, appliedBy }) => {
       uid,
       studentName:  student.displayName || '',
       rollNumber:   student.rollNumber  || '',
-<<<<<<< HEAD
-      amount,
-      reason,
-      appliedBy,
-      appliedAt:    serverTimestamp(),
-      balanceBefore: student.walletBalance || 0,
-=======
       amount: penaltyAmount,
       reason,
       appliedBy,
       appliedAt:    serverTimestamp(),
       balanceBefore,
->>>>>>> f8cf1c4 (test case)
       balanceAfter:  newBalance,
     }),
   ]);
@@ -283,16 +260,6 @@ export const listenPenalties = (callback) => {
   );
 };
 
-<<<<<<< HEAD
-/** Mark a penalty as resolved (and refund the amount back to the student's wallet) */
-export const resolvePenalty = async (penaltyId, uid, amount) => {
-  const userSnap = await getDoc(doc(db, 'users', uid));
-  if (!userSnap.exists()) throw new Error('Student not found');
-  const current = userSnap.data().walletBalance || 0;
-  await Promise.all([
-    updateDoc(doc(db, 'users', uid), {
-      walletBalance: current + amount,
-=======
 /** Mark a penalty as resolved and refund only the amount actually deducted */
 export const resolvePenalty = async (penaltyId, uid, amount) => {
   const userSnap = await getDoc(doc(db, 'users', uid));
@@ -312,7 +279,6 @@ export const resolvePenalty = async (penaltyId, uid, amount) => {
   await Promise.all([
     updateDoc(doc(db, 'users', uid), {
       walletBalance: current + refund,
->>>>>>> f8cf1c4 (test case)
       updatedAt: serverTimestamp(),
     }),
     updateDoc(doc(db, 'penalties', penaltyId), {
@@ -466,7 +432,3 @@ export const hasAutoPollForMeal = async (meal, date) => {
   );
   return !snap.empty;
 };
-<<<<<<< HEAD
-
-=======
->>>>>>> f8cf1c4 (test case)
