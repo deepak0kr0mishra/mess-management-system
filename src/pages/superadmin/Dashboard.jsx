@@ -133,13 +133,9 @@ export default function AdminDashboard() {
                     <p className="font-sans font-bold text-sm">{s.displayName}</p>
                     <p className="font-mono text-xs text-brand-light">{s.rollNumber}</p>
                   </div>
-<<<<<<< HEAD
-                  <span className="font-serif font-bold text-sm text-brand-gold">₹{s.walletBalance || 0}</span>
-=======
                   <span className={`font-serif font-bold text-sm ${Number(s.walletBalance) < 0 ? 'text-red-600' : 'text-brand-gold'}`}>
                     ₹{s.walletBalance || 0}
                   </span>
->>>>>>> f8cf1c4 (test case)
                 </div>
               ))}
               {students.length === 0 && (

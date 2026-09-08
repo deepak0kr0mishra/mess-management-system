@@ -167,13 +167,9 @@ export default function Students({ direction }) {
                     {/* Wallet */}
                     <div className="text-right shrink-0 mr-2 hidden sm:block">
                       <p className="font-sans text-[10px] text-brand-light uppercase">Wallet</p>
-<<<<<<< HEAD
-                      <p className="font-serif font-bold text-brand-gold">₹{s.walletBalance ?? 0}</p>
-=======
                       <p className={`font-serif font-bold ${Number(s.walletBalance) < 0 ? 'text-red-600' : 'text-brand-gold'}`}>
                         ₹{s.walletBalance ?? 0}
                       </p>
->>>>>>> f8cf1c4 (test case)
                     </div>
 
                     {/* Actions */}

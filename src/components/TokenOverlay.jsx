@@ -4,12 +4,14 @@ import { X } from 'lucide-react';
 import { format } from 'date-fns';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
+import { listenMyActiveOptOut, getOptOutEndDate } from '../lib/firestoreService';
 
 /* ─────────────────────────────────────────────────────────
    TokenOverlay — Student QR meal pass
    • Shows a unique QR that changes every meal period
    • QR content: "GECMESS|{uid}|{yyyy-MM-dd}|{mealKey}"
    • If outside a meal window: shows "No Active Meal"
+   • If opted out today: shows blocked state (no QR)
    • The worker scans this QR to verify entry
 ───────────────────────────────────────────────────────── */
 
@@ -20,30 +22,26 @@ const MEAL_WINDOWS = [
   { key: 'dinner',    label: 'Dinner',     emoji: '🌙',  start: 20, end: 22, color: '#d1fae5', border: '#059669' },
 ];
 
-<<<<<<< HEAD
-/* ─────────────────────────────────────────────────────────
-   🔧 DEV TESTING — override the current hour here to
-   simulate a specific meal window without waiting for it.
+/*
+  DEV TESTING — override the current hour here to
+  simulate a specific meal window without waiting for it.
 
-   Set to null for live (real clock).
-   Set to a number (0-23) to force that hour:
-     8  → Breakfast  (8–10)
-     13 → Lunch      (13–15)
-     18 → Snacks     (18–19)
-     20 → Dinner     (20–22)
-     12 → No meal    (between windows)
+  Set to null for live (real clock).
+  Set to a number (0-23) to force that hour:
+    8  → Breakfast  (8–10)
+    13 → Lunch      (13–15)
+    18 → Snacks     (18–19)
+    20 → Dinner     (20–22)
+    12 → No meal    (between windows)
 
-   Remember to set back to null before going live!
+  Must match DEV_HOUR in src/pages/worker/Terminal.jsx!
+  Remember to set back to null before going live!
 ───────────────────────────────────────────────────────── */
-const DEV_HOUR = null; // ← change this to test
+const DEV_HOUR = null; // ← live mode (testing ke liye number set karo, dono files me same)
 
-function getActiveMeal(hour) {
-  const h = DEV_HOUR !== null ? DEV_HOUR : hour;
+function getActiveMeal() {
+  const h = DEV_HOUR ?? new Date().getHours();
   return MEAL_WINDOWS.find(m => h >= m.start && h < m.end) ?? null;
-=======
-function getActiveMeal(hour) {
-  return MEAL_WINDOWS.find(m => hour >= m.start && hour < m.end) ?? null;
->>>>>>> f8cf1c4 (test case)
 }
 
 function useLiveClock() {
@@ -58,21 +56,30 @@ function useLiveClock() {
 export default function TokenOverlay({ onClose }) {
   const { user } = useAuth();
   const time     = useLiveClock();
+  const [optedOut, setOptedOut] = useState(null);
+  const [meal, setMeal] = useState(getActiveMeal);
 
-  const hour    = time.getHours();
-  const meal    = getActiveMeal(hour);
+  // Re-check meal window every minute (in case it opens/closes while token is shown)
+  useEffect(() => {
+    if (DEV_HOUR !== null) return; // skip polling in dev override mode
+    const id = setInterval(() => setMeal(getActiveMeal()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   const dateStr = format(time, 'yyyy-MM-dd');
   const timeStr = format(time, 'h:mm:ss aa');
   const dayStr  = format(time, 'EEE, dd MMM yyyy');
 
-<<<<<<< HEAD
-  const qrPayload = meal ? `GECMESS|${user?.uid}|${dateStr}|${meal.key}` : null;
-=======
-  // QR payload — changes per meal per day per student
-  const qrPayload = meal
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = listenMyActiveOptOut(user.uid, dateStr, setOptedOut);
+    return () => unsub?.();
+  }, [user?.uid, dateStr]);
+
+  // QR payload — changes per meal per day per student (opted-out ho to QR nahi)
+  const qrPayload = meal && !optedOut
     ? `GECMESS|${user?.uid}|${dateStr}|${meal.key}`
     : null;
->>>>>>> f8cf1c4 (test case)
 
   return (
     <div
@@ -88,46 +95,6 @@ export default function TokenOverlay({ onClose }) {
         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
         onContextMenu={e => e.preventDefault()}
       >
-<<<<<<< HEAD
-        {/* ── Meal header strip ── */}
-        <div
-          className="px-5 py-4 flex items-center justify-between"
-          style={{
-            background: meal ? meal.color : '#f3f4f6',
-            borderBottom: `2px solid ${meal ? meal.border : '#d1d5db'}`,
-          }}
-        >
-          <div>
-            <p className="font-sans font-bold text-sm text-brand-dark">
-              {meal ? `${meal.emoji} ${meal.label} Pass` : '⏳ No Active Meal'}
-            </p>
-            <p className="font-sans text-[11px] text-brand-dark/50 mt-0.5">{dayStr}</p>
-          </div>
-          {meal && (
-            <span className="font-sans text-[10px] text-brand-dark/50">
-              {meal.start}:00 – {meal.end}:00
-            </span>
-          )}
-        </div>
-
-        {/* ── QR Code ── */}
-        <div className="flex flex-col items-center px-5 pt-5 pb-4">
-          {qrPayload ? (
-            <div className="rounded-brutal border-2 border-brand-dark p-2 bg-white shadow-brutal-sm mb-4">
-              <QRCodeSVG
-                value={qrPayload}
-                size={240}
-                level="M"
-                includeMargin={false}
-                fgColor="#1a1209"
-              />
-            </div>
-          ) : (
-            <div className="w-[244px] h-[244px] rounded-brutal border-2 border-brand-dark/20 bg-brand-bg flex flex-col items-center justify-center gap-2 mb-4">
-              <span className="text-5xl">⏳</span>
-              <p className="font-sans text-xs text-brand-dark/50 text-center px-6">
-                QR appears during meal windows
-=======
         {/* ── Header strip (meal-coloured) ── */}
         <div
           className="flex items-center justify-between px-5 py-4"
@@ -152,7 +119,15 @@ export default function TokenOverlay({ onClose }) {
 
         {/* ── QR Code area ── */}
         <div className="flex flex-col items-center px-5 py-5">
-          {qrPayload ? (
+          {optedOut ? (
+            <div className="w-full rounded-brutal border-2 border-brand-dark p-4 bg-brand-secondary shadow-brutal-sm mb-3 text-center">
+              <p className="text-3xl mb-1">⛔</p>
+              <p className="font-sans font-bold text-sm text-brand-dark">You are opted out</p>
+              <p className="font-sans text-xs text-brand-dark/70 mt-1">
+                {optedOut.startDate} → {getOptOutEndDate(optedOut.startDate, optedOut.numDays)} · Gate par entry deny hogi.
+              </p>
+            </div>
+          ) : qrPayload ? (
             <>
               <div className="rounded-brutal border-2 border-brand-dark p-3 bg-white shadow-brutal-sm mb-3">
                 <QRCodeSVG
@@ -176,16 +151,11 @@ export default function TokenOverlay({ onClose }) {
               <span className="text-4xl">⏳</span>
               <p className="font-sans text-xs text-brand-dark/50 text-center px-4">
                 No active meal right now.<br />QR will appear during meal windows.
->>>>>>> f8cf1c4 (test case)
               </p>
             </div>
           )}
 
           {/* Name + roll strip */}
-<<<<<<< HEAD
-          {/* Name + roll */}
-=======
->>>>>>> f8cf1c4 (test case)
           <div className="w-full border-2 border-brand-dark rounded-brutal px-4 py-3 text-center bg-brand-bg shadow-brutal-sm">
             <p className="font-sans font-bold text-lg text-brand-dark leading-tight">
               {user?.displayName ?? 'Student'}
@@ -201,11 +171,7 @@ export default function TokenOverlay({ onClose }) {
 
         {/* ── Footer ── */}
         <div className="px-5 py-3 flex items-center justify-between">
-<<<<<<< HEAD
           <p className="font-sans text-[9px] text-brand-dark/30 uppercase tracking-widest">GEC Sheikhpura Mess</p>
-=======
-          <p className="font-sans text-[9px] text-brand-dark/30 uppercase tracking-widest">GEC Sheikhpura</p>
->>>>>>> f8cf1c4 (test case)
           <p className="font-mono text-[9px] text-brand-dark/30">{dateStr}</p>
         </div>
       </motion.div>
