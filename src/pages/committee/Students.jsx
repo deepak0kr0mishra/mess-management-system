@@ -14,11 +14,11 @@ import { listenAllStudents, approveStudent, rejectStudent } from '../../lib/fire
 ───────────────────────────────────────────────────────── */
 
 export default function Students({ direction }) {
-  const [students,    setStudents]    = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [search,      setSearch]      = useState('');
-  const [filter,      setFilter]      = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected'
-  const [processing,  setProcessing]  = useState({});
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all'); // 'all' | 'pending' | 'approved' | 'rejected'
+  const [processing, setProcessing] = useState({});
 
   useEffect(() => {
     const unsub = listenAllStudents((data) => {
@@ -49,21 +49,21 @@ export default function Students({ direction }) {
     if (!matchesSearch) return false;
     if (filter === 'approved') return s.isApproved === true;
     if (filter === 'rejected') return s.isApproved === false;
-    if (filter === 'pending')  return s.isApproved == null;
+    if (filter === 'pending') return s.isApproved == null;
     return true;
   });
 
   const counts = {
-    all:      students.length,
-    pending:  students.filter(s => s.isApproved == null).length,
+    all: students.length,
+    pending: students.filter(s => s.isApproved == null).length,
     approved: students.filter(s => s.isApproved === true).length,
     rejected: students.filter(s => s.isApproved === false).length,
   };
 
   const FILTERS = [
-    { key: 'all',      label: `All (${counts.all})`,           color: 'bg-brand-surface' },
-    { key: 'pending',  label: `Pending (${counts.pending})`,   color: 'bg-brand-primary' },
-    { key: 'approved', label: `Approved (${counts.approved})`, color: 'bg-brand-accent'  },
+    { key: 'all', label: `All (${counts.all})`, color: 'bg-brand-surface' },
+    { key: 'pending', label: `Pending (${counts.pending})`, color: 'bg-brand-primary' },
+    { key: 'approved', label: `Approved (${counts.approved})`, color: 'bg-brand-accent' },
     { key: 'rejected', label: `Rejected (${counts.rejected})`, color: 'bg-brand-secondary' },
   ];
 
@@ -124,13 +124,13 @@ export default function Students({ direction }) {
             const status = s.isApproved === true
               ? 'approved'
               : s.isApproved === false
-              ? 'rejected'
-              : 'pending';
+                ? 'rejected'
+                : 'pending';
 
             const statusConf = {
-              approved: { label: 'Approved',  color: 'bg-brand-accent',    dot: 'bg-green-500' },
-              rejected: { label: 'Rejected',  color: 'bg-brand-secondary', dot: 'bg-red-500'   },
-              pending:  { label: 'Pending',   color: 'bg-brand-primary',   dot: 'bg-yellow-500'},
+              approved: { label: 'Approved', color: 'bg-brand-accent', dot: 'bg-green-500' },
+              rejected: { label: 'Rejected', color: 'bg-brand-secondary', dot: 'bg-red-500' },
+              pending: { label: 'Pending', color: 'bg-brand-primary', dot: 'bg-yellow-500' },
             }[status];
 
             const busy = processing[s.uid];

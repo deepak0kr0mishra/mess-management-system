@@ -16,10 +16,10 @@ import { listenMyActiveOptOut, getOptOutEndDate } from '../lib/firestoreService'
 ───────────────────────────────────────────────────────── */
 
 const MEAL_WINDOWS = [
-  { key: 'breakfast', label: 'Breakfast',  emoji: '☀️',  start: 8,  end: 10, color: '#fef3c7', border: '#d97706' },
-  { key: 'lunch',     label: 'Lunch',      emoji: '🌤️', start: 13, end: 15, color: '#fce7f3', border: '#db2777' },
-  { key: 'snacks',    label: 'Snacks',     emoji: '🫖',  start: 18, end: 19, color: '#ede9fe', border: '#7c3aed' },
-  { key: 'dinner',    label: 'Dinner',     emoji: '🌙',  start: 20, end: 22, color: '#d1fae5', border: '#059669' },
+  { key: 'breakfast', label: 'Breakfast', emoji: '☀️', start: 8, end: 10, color: '#fef3c7', border: '#d97706' },
+  { key: 'lunch', label: 'Lunch', emoji: '🌤️', start: 13, end: 15, color: '#fce7f3', border: '#db2777' },
+  { key: 'snacks', label: 'Snacks', emoji: '🫖', start: 18, end: 19, color: '#ede9fe', border: '#7c3aed' },
+  { key: 'dinner', label: 'Dinner', emoji: '🌙', start: 20, end: 22, color: '#d1fae5', border: '#059669' },
 ];
 
 /*
@@ -55,7 +55,7 @@ function useLiveClock() {
 
 export default function TokenOverlay({ onClose }) {
   const { user } = useAuth();
-  const time     = useLiveClock();
+  const time = useLiveClock();
   const [optedOut, setOptedOut] = useState(null);
   const [meal, setMeal] = useState(getActiveMeal);
 
@@ -68,7 +68,7 @@ export default function TokenOverlay({ onClose }) {
 
   const dateStr = format(time, 'yyyy-MM-dd');
   const timeStr = format(time, 'h:mm:ss aa');
-  const dayStr  = format(time, 'EEE, dd MMM yyyy');
+  const dayStr = format(time, 'EEE, dd MMM yyyy');
 
   useEffect(() => {
     if (!user?.uid) return;

@@ -28,10 +28,10 @@ function StatCard({ color, icon: Icon, label, value, onClick }) {
 }
 
 export default function AdminDashboard() {
-  const [students, setStudents]   = useState([]);
-  const [pending,  setPending]    = useState([]);
-  const [loading,  setLoading]    = useState(true);
-  const [showList, setShowList]   = useState(false);
+  const [students, setStudents] = useState([]);
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
     getAllStudents()
